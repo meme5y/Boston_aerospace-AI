@@ -158,7 +158,7 @@ Without the files, synthetic data is generated automatically.
 📧 Contact
 
 Fernando Artur Augusto — Founder & AI/ML Engineer
-📧 Arthur874066@gmail.com
+📧 arthur874066@gmail.com
 🐙 github.com/meme5y/Boston_aerospace-AI
 
 ---
