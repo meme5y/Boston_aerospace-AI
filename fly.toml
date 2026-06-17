@@ -7,27 +7,25 @@ primary_region = "fra"
 [env]
   PORT = "5000"
 
-[services]
+[http_service]
   internal_port = 5000
-  protocol = "tcp"
+  force_https = true
 
-  [services.concurrency]
-    type = "connections"
-    hard_limit = 25
-    soft_limit = 20
-
-  [[services.ports]]
-    port = 80
-    handlers = ["http"]
-
-  [[services.ports]]
-    port = 443
-    handlers = ["tls", "http"]
-
-  [services.healthchecks]
+  [[http_service.checks]]
     interval = "15s"
     timeout = "10s"
     grace_period = "30s"
+    method = "get"
+    path = "/api/health"
+    protocol = "http"
+
+  [[http_service.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[http_service.ports]]
+    port = 443
+    handlers = ["tls", "http"]
 
 [metrics]
   port = 5000
