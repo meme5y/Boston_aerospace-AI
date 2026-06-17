@@ -1,32 +1,7 @@
-app = "boston-aerospace-ai"
-primary_region = "fra"
-
-[build]
-  dockerfile = "Dockerfile"
-
-[env]
-  PORT = "5000"
-
-[http_service]
-  internal_port = 5000
-  force_https = true
-
-  [[http_service.checks]]
+[[http_service.checks]]
     interval = "15s"
     timeout = "10s"
     grace_period = "30s"
     method = "get"
-    path = "/api/health"
+    path = "/api/ping"
     protocol = "http"
-
-  [[http_service.ports]]
-    port = 80
-    handlers = ["http"]
-
-  [[http_service.ports]]
-    port = 443
-    handlers = ["tls", "http"]
-
-[metrics]
-  port = 5000
-  path = "/metrics"
