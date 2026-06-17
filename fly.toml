@@ -1,7 +1,26 @@
-[[http_service.checks]]
-    interval = "15s"
-    timeout = "10s"
-    grace_period = "30s"
-    method = "get"
-    path = "/api/ping"
-    protocol = "http"
+# fly.toml app configuration file generated for boston-aerospace-ai-kkajha on 2026-06-17T22:28:51Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'boston-aerospace-ai-kkajha'
+primary_region = 'jnb'
+
+[build]
+
+[http_service]
+  internal_port = 8080
+
+  [[http_service.checks]]
+    interval = '15s'
+    timeout = '10s'
+    grace_period = '30s'
+    method = 'get'
+    path = '/api/ping'
+    protocol = 'http'
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 256

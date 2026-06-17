@@ -1,51 +1,52 @@
-FROM python:3.11-slim
+# Stage 1: Build the Application
+# We use python:3.11-slim as the base for building and installing dependencies.
+FROM python:3.11-slim AS build
 
-WORKDIR /app
+# Set the working directory inside the container
+WORKDIR /usr/src/app
 
-RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    libpq5 \
-    libgomp1 \
-    libsndfile1 \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+# Install system dependencies needed for building Python packages
+RUN apt-get update && apt-get install -y --no-install-recommends     build-essential     gcc     && rm -rf /var/lib/apt/lists/*
 
-# Instala dependências directamente (sem precisar de requirements.txt)
-RUN pip install --no-cache-dir \
-    flask==3.0.3 \
-    flask-cors==4.0.1 \
-    waitress==3.0.0 \
-    bcrypt==4.1.3 \
-    psycopg2-binary==2.9.9 \
-    numpy==1.26.4 \
-    pandas==2.2.2 \
-    scikit-learn==1.5.0 \
-    xgboost==2.0.3 \
-    lightgbm==4.3.0 \
-    catboost==1.2.5 \
-    joblib==1.4.2 \
-    shap==0.45.1 \
-    langchain==0.2.6 \
-    langchain-community==0.2.6 \
-    langchain-ollama==0.1.1 \
-    langchain-text-splitters==0.2.2 \
-    chromadb==0.5.3 \
-    pypdf==4.2.0 \
-    reportlab==4.2.2 \
-    opencv-python-headless==4.10.0.84 \
-    librosa==0.10.2 \
-    soundfile==0.12.1 \
-    scipy==1.13.1 \
-    requests==2.32.3
+# Create a virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
+# Copy requirements.txt if it exists (using wildcard to avoid build failure)
+COPY requirements.tx[t] ./requirements.txt
+
+# Install Python dependencies only if requirements.txt exists
+RUN pip install --upgrade pip &&     if [ -f requirements.txt ]; then         pip install -r requirements.txt;     fi
+
+# Copy the rest of the application source code
 COPY . .
 
-RUN mkdir -p Modelos Uploads Logs knowledge Data/Raw Data/Processed Data/Synthetic
+# Stage 2: Create the Final Production Image
+# We use python:3.11-slim as a minimal runtime image.
+FROM python:3.11-slim
 
-EXPOSE 5000
+# Set the working directory
+WORKDIR /usr/src/app
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/ping')"
+# Install only runtime dependencies if needed
+RUN apt-get update && apt-get install -y --no-install-recommends     libpq5     && rm -rf /var/lib/apt/lists/*
 
+# Copy the virtual environment from the build stage
+COPY --from=build /opt/venv /opt/venv
+
+# Copy the application code
+COPY --from=build /usr/src/app .
+
+# Set the virtual environment as the active Python environment
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Create a non-root user to run the application
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /usr/src/app
+USER appuser
+
+# Expose the port your app runs on
+ENV PORT=8080
+EXPOSE $PORT
+
+# Define the command to start your application
 CMD ["python", "app.py"]
