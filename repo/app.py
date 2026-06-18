@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """app.py — Entrypoint do Boston Aerospace AI"""
+import os
+import sys
 from flask import Flask, render_template, session
 from flask_cors import CORS
 from Config.Settings import SECRET_KEY, MAX_CONTENT_LEN
@@ -13,19 +15,32 @@ def create_app() -> Flask:
     app.secret_key = SECRET_KEY
     app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LEN
     CORS(app, supports_credentials=True)
+    
+    # Inicializar banco de dados e modelos
     init_db()
     load_models()
     register_routes(app)
+    
     @app.route("/")
     def index():
         return render_template("Index.html")
+    
+    @app.route("/health")
+    def health():
+        return {"status": "healthy", "version": "1.0"}, 200
+    
     return app
 
 if __name__ == "__main__":
     app = create_app()
+    
+    # Usar a porta definida pelo Render (ou 5000 como fallback)
+    port = int(os.environ.get("PORT", 5000))
+    
     try:
         from waitress import serve
-        print("Boston Aerospace AI — http://localhost:5000")
-        serve(app, host="0.0.0.0", port=5000, threads=4)
+        print(f"Boston Aerospace AI — http://0.0.0.0:{port}")
+        serve(app, host="0.0.0.0", port=port, threads=4)
     except ImportError:
-        app.run(host="0.0.0.0", port=5000, debug=False)
+        print(f"Waitress não disponível. Usando Flask development server na porta {port}")
+        app.run(host="0.0.0.0", port=port, debug=False)
