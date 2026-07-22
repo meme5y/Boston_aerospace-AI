@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+
+# Env
+.env
+*.env.local
+venv/
+env/
+
+# Modelos treinados (grandes)
+Modelos/*.pkl
+Modelos/meta.json
+
+# Dados NASA (não versionar)
+Data/Raw/train_*.txt
+Data/Raw/test_*.txt
+
+# Uploads e logs
+Uploads/*
+!Uploads/.gitkeep
+Logs/*.log
+!Logs/.gitkeep
+
+# Base de dados local
+*.db
+
+# Knowledge base (ChromaDB)
+knowledge/
+
+# Docker
+*.tar.gz
+
+# IDE
+.vscode/
+.idea/

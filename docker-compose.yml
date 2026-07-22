@@ -1,0 +1,46 @@
+version: '3.9'
+services:
+  app:
+    build: .
+    container_name: boston_app
+    restart: unless-stopped
+    ports: ["5000:5000"]
+    environment:
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-tinyllama}
+      EMBED_MODEL:  ${EMBED_MODEL:-nomic-embed-text}
+    volumes:
+      - models_data:/app/Modelos
+      - uploads_data:/app/Uploads
+      - knowledge_data:/app/knowledge
+      - nasa_data:/app/Data/Raw
+    depends_on: [ollama]
+    networks: [boston_net]
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: boston_ollama
+    restart: unless-stopped
+    volumes: [ollama_data:/root/.ollama]
+    networks: [boston_net]
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: boston_tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on: [app]
+    networks: [boston_net]
+
+volumes:
+  ollama_data:
+  models_data:
+  uploads_data:
+  knowledge_data:
+  nasa_data:
+
+networks:
+  boston_net:
+    driver: bridge
